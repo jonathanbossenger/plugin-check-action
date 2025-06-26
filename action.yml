@@ -107,10 +107,10 @@ runs:
         mv wp-cli.phar /usr/local/bin/wp
       shell: bash
 
-    - name: Run playground/cli inside the plugin directory
+    - name: Run playground/cli
       run: |
         cd $PLUGIN_DIR
-        npx @wp-playground/cli server --auto-mount &
+        npx @wp-playground/cli server --auto-mount --blueprint=.playground/blueprint.json &
         PLAYGROUND_PID=$!
         echo "PLAYGROUND_PID=$PLAYGROUND_PID" >> "$GITHUB_ENV"
         sleep 5  # Give the server time to start
