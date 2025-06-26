@@ -114,6 +114,11 @@ runs:
         mv wp-cli.phar /usr/local/bin/wp
       shell: bash
 
+    - name: Download WordPress core
+      run: |
+        mkdir wordpress
+        cd wordpress && wp core download  
+
     - name: Run playground/cli
       run: |
         cd $PLUGIN_DIR
@@ -125,6 +130,7 @@ runs:
 
     - name: Run Plugin Check
       run: |
+        cd
         CHECKS="${CHECKS//$'\n'/,}"
         EXCLUDE_CHECKS="${EXCLUDE_CHECKS//$'\n'/,}"
         CATEGORIES="${CATEGORIES//$'\n'/,}"
@@ -134,7 +140,7 @@ runs:
         ADDITIONAL_ARGS="$CHECKS $EXCLUDE_CHECKS $CATEGORIES $IGNORE_CODES $IGNORE_WARNINGS $IGNORE_ERRORS $INCLUDE_EXPERIMENTAL $EXCLUDE_FILES $EXCLUDE_DIRS $SEVERITY $ERROR_SEVERITY $WARNING_SEVERITY $INCLUDE_LOW_SEVERITY_ERRORS $INCLUDE_LOW_SEVERITY_WARNINGS $SLUG"
 
         echo "::group::Debugging information"
-        sudo -u www-data wp cli info
+        sudo -u www-data wp cli info --path=wordpress
         sudo -u www-data wp plugin list
         sudo -u www-data wp plugin list-checks
         sudo -u www-data wp plugin list-check-categories
