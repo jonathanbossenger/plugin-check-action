@@ -100,24 +100,14 @@ runs:
       env:
         BUILD_DIR: ${{ inputs.build-dir }}
 
-    - name: Setup wp-env
-      run: |
-        touch .wp-env.json
-        > .wp-env.json
-        echo "{ \"core\": $WP_VERSION, \"port\": 8880, \"testsPort\": 8881, \"plugins\": [ \"https://downloads.wordpress.org/plugin/plugin-check.latest-stable.zip\" ], \"mappings\": { \"wp-content/plugins/$PLUGIN_SLUG\": \"$PLUGIN_DIR\" } }" >> .wp-env.json
+    - name: Install WP CLI
+      run: curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+           chmod +x wp-cli.phar
+           sudo mv wp-cli.phar /usr/local/bin/wp
 
-        npm -g --no-fund i @wordpress/env
-      shell: bash
-      env:
-        WP_VERSION: ${{ inputs.wp-version == 'trunk' && '"WordPress/WordPress#master"' || 'null' }}
-
-    - name: Start wp-env
-      uses: nick-fields/retry@v3
-      with:
-        timeout_minutes: 10
-        max_attempts: 3
-        shell: bash
-        command: wp-env start --update
+    - name: Run playground/cli inside the plugin directory
+      run: cd $PLUGIN_DIR
+        npx @wp-playground/cli server --auto-mount
 
     - name: Run Plugin Check
       run: |
@@ -130,32 +120,32 @@ runs:
         ADDITIONAL_ARGS="$CHECKS $EXCLUDE_CHECKS $CATEGORIES $IGNORE_CODES $IGNORE_WARNINGS $IGNORE_ERRORS $INCLUDE_EXPERIMENTAL $EXCLUDE_FILES $EXCLUDE_DIRS $SEVERITY $ERROR_SEVERITY $WARNING_SEVERITY $INCLUDE_LOW_SEVERITY_ERRORS $INCLUDE_LOW_SEVERITY_WARNINGS $SLUG"
 
         echo "::group::Debugging information"
-        wp-env run cli wp cli info
-        wp-env run cli wp plugin list
-        wp-env run cli wp plugin list-checks
-        wp-env run cli wp plugin list-check-categories
+        wp cli info
+        wp plugin list
+        wp plugin list-checks
+        wp plugin list-check-categories
         echo "::endgroup::"
 
-        echo "::group::Install dependencies"
+        #echo "::group::Install dependencies"
 
         # List all dependencies
-        wp-env run cli wp plugin get $PLUGIN_SLUG --field=requires_plugins
-        DEPENDENCIES=$(wp-env run cli wp plugin get $PLUGIN_SLUG --field=requires_plugins | tr ',' ' ')
+        #wp plugin get $PLUGIN_SLUG --field=requires_plugins
+        #DEPENDENCIES=$(wp plugin get $PLUGIN_SLUG --field=requires_plugins | tr ',' ' ')
         
-        if [ -z "$DEPENDENCIES" ]; then
-          echo "Plugin has no dependencies"
-        else
-          echo "Installing plugin dependencies: $DEPENDENCIES"
-          # Install all dependencies first.
-          wp-env run cli wp plugin install --activate $DEPENDENCIES
-        fi;
+        #if [ -z "$DEPENDENCIES" ]; then
+        #  echo "Plugin has no dependencies"
+        #else
+        #  echo "Installing plugin dependencies: $DEPENDENCIES"
+        #  # Install all dependencies first.
+        #  wp plugin install --activate $DEPENDENCIES
+        #fi;
         
-        echo "::endgroup::"
+        #echo "::endgroup::"
 
-        wp-env run cli wp plugin activate $PLUGIN_SLUG
+        #wp plugin activate $PLUGIN_SLUG
 
         # Run Plugin Check
-        wp-env run cli wp plugin check $PLUGIN_SLUG --format=json $ADDITIONAL_ARGS --require=./wp-content/plugins/plugin-check/cli.php > ${{ runner.temp }}/plugin-check-results.txt
+        #wp plugin check $PLUGIN_SLUG --format=json $ADDITIONAL_ARGS --require=./wp-content/plugins/plugin-check/cli.php > ${{ runner.temp }}/plugin-check-results.txt
       shell: bash
       env:
         CHECKS: ${{ inputs.checks && format('--checks={0}', inputs.checks) || '' }}
