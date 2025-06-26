@@ -117,7 +117,7 @@ runs:
     - name: Download WordPress core
       run: |
         mkdir wordpress
-        cd wordpress && sudo -u www-data wp core download  
+        cd wordpress && sudo -u root wp core download  
 
     - name: Run playground/cli
       run: |
