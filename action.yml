@@ -101,13 +101,20 @@ runs:
         BUILD_DIR: ${{ inputs.build-dir }}
 
     - name: Install WP CLI
-      run: curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
-           chmod +x wp-cli.phar
-           sudo mv wp-cli.phar /usr/local/bin/wp
+      run: |
+        curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+        chmod +x wp-cli.phar
+        mv wp-cli.phar /usr/local/bin/wp
+      shell: bash
 
     - name: Run playground/cli inside the plugin directory
-      run: cd $PLUGIN_DIR
-        npx @wp-playground/cli server --auto-mount
+      run: |
+        cd $PLUGIN_DIR
+        npx @wp-playground/cli server --auto-mount &
+        PLAYGROUND_PID=$!
+        echo "PLAYGROUND_PID=$PLAYGROUND_PID" >> "$GITHUB_ENV"
+        sleep 5  # Give the server time to start
+      shell: bash
 
     - name: Run Plugin Check
       run: |
