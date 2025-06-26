@@ -141,9 +141,9 @@ runs:
 
         echo "::group::Debugging information"
         wp cli info --path=wordpress --allow-root
-        wp plugin list --allow-root
-        wp plugin list-checks --allow-root
-        wp plugin list-check-categories --allow-root
+        wp plugin list --path=wordpress --allow-root
+        wp plugin list-checks --path=wordpress --allow-root
+        wp plugin list-check-categories --path=wordpress --allow-root
         echo "::endgroup::"
 
         #echo "::group::Install dependencies"
@@ -165,7 +165,7 @@ runs:
         #wp plugin activate $PLUGIN_SLUG 
 
         # Run Plugin Check
-        wp plugin check $PLUGIN_SLUG --format=json $ADDITIONAL_ARGS --require=./wp-content/plugins/plugin-check/cli.php > ${{ runner.temp }}/plugin-check-results.txt  --allow-root
+        wp plugin check $PLUGIN_SLUG --format=json $ADDITIONAL_ARGS --require=./wp-content/plugins/plugin-check/cli.php > ${{ runner.temp }}/plugin-check-results.txt  --allow-root  --path=wordpress
       shell: bash
       env:
         CHECKS: ${{ inputs.checks && format('--checks={0}', inputs.checks) || '' }}
