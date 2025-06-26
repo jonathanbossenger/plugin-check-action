@@ -122,7 +122,7 @@ runs:
     - name: Run playground/cli
       run: |
         cd $PLUGIN_DIR
-        npx @wp-playground/cli server --mount=wordpress:/wordpress --blueprint=.playground/blueprint.json &
+        npx @wp-playground/cli server --mount-before-install=wordpress:/wordpress --blueprint=.playground/blueprint.json &
         PLAYGROUND_PID=$!
         echo "PLAYGROUND_PID=$PLAYGROUND_PID" >> "$GITHUB_ENV"
         sleep 5  # Give the server time to start
