@@ -116,19 +116,13 @@ runs:
 
     - name: Run playground/cli
       run: |
-        mkdir -p "$PLUGIN_DIR/wordpress" "$PLUGIN_DIR/database"
         cd $PLUGIN_DIR
-        npx -yes @wp-playground/cli server --mount-before-install="$PLUGIN_DIR/wordpress":/wordpress --mount-before-install="$PLUGIN_DIR/database":/wordpress/wp-content/database --blueprint="$PLUGIN_DIR/.playground/blueprint.json" &
+        mkdir -p "$PLUGIN_DIR/wordpress"
+        npx -yes @wp-playground/cli server --mount-before-install=wordpress:"$PLUGIN_DIR/wordpress" --blueprint="$PLUGIN_DIR/blueprint.json" &
         PLAYGROUND_PID=$!
         echo "PLAYGROUND_PID=$PLAYGROUND_PID" >> "$GITHUB_ENV"
         sleep 10  # Give the server time to start
       shell: bash
-
-    - name: Run Plugin List    
-      run: |
-        cd $PLUGIN_DIR
-        wp cli info --allow-root
-        wp plugin list --allow-root
 
     - name: Run Plugin Check
       run: |
@@ -141,12 +135,13 @@ runs:
         #IGNORE_CODES="${IGNORE_CODES//$'\n'/,}"
         #ADDITIONAL_ARGS="$CHECKS $EXCLUDE_CHECKS $CATEGORIES $IGNORE_CODES $IGNORE_WARNINGS $IGNORE_ERRORS $INCLUDE_EXPERIMENTAL $EXCLUDE_FILES $EXCLUDE_DIRS $SEVERITY $ERROR_SEVERITY $WARNING_SEVERITY $INCLUDE_LOW_SEVERITY_ERRORS $INCLUDE_LOW_SEVERITY_WARNINGS $SLUG"
 
-        #echo "::group::Debugging information"
-        #wp cli info --path=wordpress --allow-root
-        #wp plugin list --path=wordpress --allow-root
-        #wp plugin list-checks --path=wordpress --allow-root
-        #wp plugin list-check-categories --path=wordpress --allow-root
-        #echo "::endgroup::"
+        cd "$PLUGIN_DIR/wordpress"
+        echo "::group::Debugging information"
+        wp cli info --allow-root
+        wp plugin list --allow-root
+        wp plugin list-checks --allow-root
+        wp plugin list-check-categories --allow-root
+        echo "::endgroup::"
 
         #echo "::group::Install dependencies"
 
