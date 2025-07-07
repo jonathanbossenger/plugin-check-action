@@ -4,6 +4,22 @@
             "step": "installPlugin",
             "pluginData": {
                 "resource": "wordpress.org/plugins",
+                "slug": "sqlite-database-integration"
+            }
+        },
+        {
+            "step": "cp",
+            "fromPath": "/wordpress/wp-content/plugins/sqlite-database-integration/db.copy",
+            "toPath": "/wordpress/wp-content/db.php"
+        },
+        {
+            "step": "activatePlugin",
+            "pluginPath": "/wordpress/wp-content/plugins/sqlite-database-integration"
+        },
+        {
+            "step": "installPlugin",
+            "pluginData": {
+                "resource": "wordpress.org/plugins",
                 "slug": "plugin-check"
             },
             "options": {

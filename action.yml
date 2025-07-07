@@ -104,7 +104,7 @@ runs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.1'
-        extensions: mbstring, xml, curl, zip, gd, intl, mysql, pdo_mysql
+        extensions: mbstring, xml, curl, zip, gd, intl
         coverage: none
 
     - name: Install WP CLI
@@ -114,37 +114,39 @@ runs:
         mv wp-cli.phar /usr/local/bin/wp
       shell: bash
 
-    - name: Download WordPress core
-      run: |
-        mkdir wordpress
-        cd wordpress && wp core download --allow-root  
-
     - name: Run playground/cli
       run: |
+        mkdir -p "$PLUGIN_DIR/wordpress" "$PLUGIN_DIR/database"
         cd $PLUGIN_DIR
-        npx @wp-playground/cli server --mount-before-install=wordpress:/wordpress --blueprint=.playground/blueprint.json &
+        npx -yes @wp-playground/cli server --mount-before-install="$PLUGIN_DIR/wordpress":/wordpress --mount-before-install="$PLUGIN_DIR/database":/wordpress/wp-content/database --blueprint="$PLUGIN_DIR/.playground/blueprint.json" &
         PLAYGROUND_PID=$!
         echo "PLAYGROUND_PID=$PLAYGROUND_PID" >> "$GITHUB_ENV"
-        sleep 5  # Give the server time to start
+        sleep 10  # Give the server time to start
       shell: bash
+
+    - name: Run Plugin List    
+      run: |
+        cd $PLUGIN_DIR
+        wp cli info --allow-root
+        wp plugin list --allow-root
 
     - name: Run Plugin Check
       run: |
-        cd
-        CHECKS="${CHECKS//$'\n'/,}"
-        EXCLUDE_CHECKS="${EXCLUDE_CHECKS//$'\n'/,}"
-        CATEGORIES="${CATEGORIES//$'\n'/,}"
-        EXCLUDE_FILES="${EXCLUDE_FILES//$'\n'/,}"
-        EXCLUDE_DIRS="${EXCLUDE_DIRS//$'\n'/,}"
-        IGNORE_CODES="${IGNORE_CODES//$'\n'/,}"
-        ADDITIONAL_ARGS="$CHECKS $EXCLUDE_CHECKS $CATEGORIES $IGNORE_CODES $IGNORE_WARNINGS $IGNORE_ERRORS $INCLUDE_EXPERIMENTAL $EXCLUDE_FILES $EXCLUDE_DIRS $SEVERITY $ERROR_SEVERITY $WARNING_SEVERITY $INCLUDE_LOW_SEVERITY_ERRORS $INCLUDE_LOW_SEVERITY_WARNINGS $SLUG"
+        #cd
+        #CHECKS="${CHECKS//$'\n'/,}"
+        #EXCLUDE_CHECKS="${EXCLUDE_CHECKS//$'\n'/,}"
+        #CATEGORIES="${CATEGORIES//$'\n'/,}"
+        #EXCLUDE_FILES="${EXCLUDE_FILES//$'\n'/,}"
+        #EXCLUDE_DIRS="${EXCLUDE_DIRS//$'\n'/,}"
+        #IGNORE_CODES="${IGNORE_CODES//$'\n'/,}"
+        #ADDITIONAL_ARGS="$CHECKS $EXCLUDE_CHECKS $CATEGORIES $IGNORE_CODES $IGNORE_WARNINGS $IGNORE_ERRORS $INCLUDE_EXPERIMENTAL $EXCLUDE_FILES $EXCLUDE_DIRS $SEVERITY $ERROR_SEVERITY $WARNING_SEVERITY $INCLUDE_LOW_SEVERITY_ERRORS $INCLUDE_LOW_SEVERITY_WARNINGS $SLUG"
 
-        echo "::group::Debugging information"
-        wp cli info --path=wordpress --allow-root
-        wp plugin list --path=wordpress --allow-root
-        wp plugin list-checks --path=wordpress --allow-root
-        wp plugin list-check-categories --path=wordpress --allow-root
-        echo "::endgroup::"
+        #echo "::group::Debugging information"
+        #wp cli info --path=wordpress --allow-root
+        #wp plugin list --path=wordpress --allow-root
+        #wp plugin list-checks --path=wordpress --allow-root
+        #wp plugin list-check-categories --path=wordpress --allow-root
+        #echo "::endgroup::"
 
         #echo "::group::Install dependencies"
 
